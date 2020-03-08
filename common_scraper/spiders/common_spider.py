@@ -40,13 +40,17 @@ class CommonSpider(CrawlSpider):
     def __init__(self, *args, **kwargs):
         super(CommonSpider, self).__init__(*args, **kwargs)
 
-        if 'title' in kwargs:
+        title = kwargs.get('title', None)
+        if title is not None:
             self.start_urls = [urljoin(self.url_prefix, kwargs['title'])]
+            self.logger.debug(f"use assigned title {kwargs['title']}")
         else:
             random_url = redis_cli.randomkey()
             if random_url is None:
                 raise RuntimeError('nothing in redis, should set start title.')
             self.start_urls = [random_url]
+            self.logger.debug(f"use random url from redis")
+
 
         self.logger.info(f'start crawler title url {self.start_urls}')
 
