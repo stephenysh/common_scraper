@@ -11,7 +11,7 @@
 
 BOT_NAME = 'common_scraper'
 
-LOG_LEVEL = 'DEBUG'
+LOG_LEVEL = 'INFO'
 
 SPIDER_MODULES = ['common_scraper.spiders']
 NEWSPIDER_MODULE = 'common_scraper.spiders'

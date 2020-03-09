@@ -57,8 +57,6 @@ class CommonSpider(CrawlSpider):
 
         url_unquoted = unquote(response.url)
 
-        self.logger.info(f'get into page {url_unquoted}')
-
         # Skip page with error response
         if not response.status == 200:
             self.logger.warning(f'Skip page with error response {url_unquoted}')
@@ -75,8 +73,7 @@ class CommonSpider(CrawlSpider):
         item = CommonScraperItem()
         item['url'] = response.url
         item['date'] = datetime.utcnow()
-
-        # item['response'] = response.body.decode('utf-8')
+        item['response'] = response.body.decode('utf-8')
 
         redis_cli.set(response.url, 'True')
 
