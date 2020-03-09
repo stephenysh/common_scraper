@@ -16,8 +16,9 @@ LOG_LEVEL = 'DEBUG'
 SPIDER_MODULES = ['common_scraper.spiders']
 NEWSPIDER_MODULE = 'common_scraper.spiders'
 
-DUPEFILTER_CLASS = 'common_scraper.my_dupefilter.MyDupeFilter'
-DUPEFILTER_DEBUG = True
+DUPEFILTER_CLASS = 'common_scraper.dupefilters.MyDupeFilter'
+DUPEFILTER_DEBUG = False
+
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'common_scraper (+http://www.yourdomain.com)'
 

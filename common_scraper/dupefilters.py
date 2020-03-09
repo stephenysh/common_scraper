@@ -5,7 +5,7 @@ from scrapy.utils.job import job_dir
 from scrapy.utils.request import request_fingerprint
 from scrapy.dupefilters import BaseDupeFilter
 
-from common_scraper.redis_util import redis_cli
+from common_scraper.util.redis_util import redis_cli
 
 class MyDupeFilter(BaseDupeFilter):
     """Request Fingerprint duplicates filter"""

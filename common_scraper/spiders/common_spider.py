@@ -1,6 +1,3 @@
-import re
-import redis
-import urllib.parse
 from datetime import datetime
 from urllib.parse import urlparse, urljoin, unquote
 
@@ -9,19 +6,19 @@ from scrapy.linkextractors import LinkExtractor
 
 from common_scraper.items import CommonScraperItem
 
-from common_scraper.redis_util import redis_cli
+from common_scraper.util.redis_util import redis_cli
 
-from common_scraper.util import result_path
+from common_scraper.util.path_util import job_path
+
+from common_scraper.util.cfg_util import url_prefix, url_name
+
 '''
 1. use redis to share data with multi spider instance
 2. just crawl the page and process data later
 '''
 
-'https://www.bbc.com/arabic/'
 class CommonSpider(CrawlSpider):
-    name = 'common_spider'
-
-    url_prefix = f'https://www.bbc.com/arabic/'
+    name = url_name
 
     domain = urlparse(url_prefix).netloc
 
@@ -34,23 +31,20 @@ class CommonSpider(CrawlSpider):
     custom_settings = {
         'FEED_FORMAT': 'jsonlines',
         'FEED_EXPORT_ENCODING': 'utf-8',
+        'JOBDIR': str(job_path / url_name),
     }
 
 
     def __init__(self, *args, **kwargs):
         super(CommonSpider, self).__init__(*args, **kwargs)
 
-        title = kwargs.get('title', None)
-        if title is not None:
-            self.start_urls = [urljoin(self.url_prefix, kwargs['title'])]
-            self.logger.debug(f"use assigned title {kwargs['title']}")
+        random_url = redis_cli.randomkey()
+        if random_url is None:
+            self.start_urls = [urljoin(url_prefix, './')]
+            self.logger.debug(f"use default title ./")
         else:
-            random_url = redis_cli.randomkey()
-            if random_url is None:
-                raise RuntimeError('nothing in redis, should set start title.')
             self.start_urls = [random_url]
             self.logger.debug(f"use random url from redis")
-
 
         self.logger.info(f'start crawler title url {self.start_urls}')
 
@@ -68,6 +62,11 @@ class CommonSpider(CrawlSpider):
         # Skip page with error response
         if not response.status == 200:
             self.logger.warning(f'Skip page with error response {url_unquoted}')
+            return None
+
+        # Skip page with error response
+        if redis_cli.get(response.url) is not None:
+            self.logger.warning(f'Skip page with duplicate redis record {url_unquoted}')
             return None
 
         ################# real process
