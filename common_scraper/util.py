@@ -5,6 +5,8 @@ project_path = Path(common_scraper.__file__).parent.parent
 
 result_path = project_path.joinpath('result')
 
+cfg_path = project_path.joinpath('scrapy.cfg')
+
 if __name__ == '__main__':
     print(project_path)
     print(result_path)
