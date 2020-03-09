@@ -10,7 +10,7 @@ from common_scraper.util.redis_util import redis_cli
 
 from common_scraper.util.path_util import job_path
 
-from common_scraper.util.cfg_util import url_prefix, url_name
+from common_scraper.util.cfg_util import url_prefix, url_name, start_url
 
 '''
 1. use redis to share data with multi spider instance
@@ -40,11 +40,11 @@ class CommonSpider(CrawlSpider):
 
         random_url = redis_cli.randomkey()
         if random_url is None:
-            self.start_urls = [urljoin(url_prefix, './')]
-            self.logger.debug(f"use default title ./")
+            self.start_urls = [start_url]
+            self.logger.info(f"use default title ./")
         else:
             self.start_urls = [random_url]
-            self.logger.debug(f"use random url from redis")
+            self.logger.info(f"use random url from redis")
 
         self.logger.info(f'start crawler title url {self.start_urls}')
 
