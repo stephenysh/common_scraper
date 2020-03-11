@@ -38,13 +38,13 @@ class CommonSpider(CrawlSpider):
     def __init__(self, *args, **kwargs):
         super(CommonSpider, self).__init__(*args, **kwargs)
 
-        random_url = redis_cli.randomkey()
-        if random_url is None:
-            self.start_urls = [start_url]
-            self.logger.info(f"use default title ./")
-        else:
-            self.start_urls = [random_url]
-            self.logger.info(f"use random url from redis")
+        # random_url = redis_cli.randomkey()
+        # if random_url is None:
+        self.start_urls = [start_url]
+        self.logger.info(f"use default title ./")
+        # else:
+        #     self.start_urls = [random_url]
+        #     self.logger.info(f"use random url from redis")
 
         self.logger.info(f'start crawler title url {self.start_urls}')
 

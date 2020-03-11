@@ -11,7 +11,7 @@ from common_scraper.util.path_util import result_path
 
 def start_spider(idx):
     settings = get_project_settings()
-    json_file = str(result_path / f'{CommonSpider.domain}_{idx:02d}.jsonl')
+    json_file = str(result_path / f'{CommonSpider.domain}_{idx:02d}.json')
     settings.attributes['FEED_URI'].set(json_file, 0)
 
     crawler = CrawlerProcess(settings)

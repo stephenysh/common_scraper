@@ -78,7 +78,7 @@ if __name__ == '__main__':
     if cookie is None:
         exit('log in failed')
 
-    idx = 0
+    idx = 23341
 
     fw = open(f'academia-arabic_id_{idx}.jsonl', 'w')
 
@@ -108,6 +108,9 @@ if __name__ == '__main__':
             continue
 
         logger.info(f'idx {idx} success')
+
+        if len(book_list) == 0:
+            logger.warning(f'idx [{idx}] has no book')
         for book in book_list:
             id = book.get('ORG')
             if id is None:
