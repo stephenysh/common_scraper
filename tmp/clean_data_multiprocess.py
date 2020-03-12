@@ -2,16 +2,21 @@
 clean data from one or more .txt files
 '''
 
-import re
-from pathlib import Path
-import nltk
-import mmap
-import multiprocessing
-from multiprocessing import Pool
+import argparse
 import itertools
+import multiprocessing
+import re
+from multiprocessing import Pool
+from pathlib import Path
 from string import punctuation
+
+import nltk
+
 from util import mapLineCount
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--input', required=True)
+args = parser.parse_args()
 
 split_pattern = re.compile(r'(?<=\w[\.\?\!])[\.\?\!]*\s')
 ar_word_pattern = re.compile('[\u0600-\u06FF]+')
@@ -22,11 +27,7 @@ punc = ''.join([rf"\\{i}" for i in punctuation])
 unwant_chars_re = re.compile(rf'[^\”\“\«\»\-\–\…\″\’\‘\‑\u202a\u202b\u202c\u202d\u202e\u200b\u200c\u200d\u200e\u200f\u0600-\u06FFa-zA-Z\d '+ punc + ']+')
 valid_line_end_punc_re = '^.*[\.\?\!]$'
 
-# input_str = '/media/shihangyu/302b5584-4afe-4898-8d79-e12f41fd7cc6/crawl_sinovision.txt'
-# input_str = '/media/shihangyu/302b5584-4afe-4898-8d79-e12f41fd7cc6/result/bbc_redis_ar_pages'
-# input_str = '/media/shihangyu/302b5584-4afe-4898-8d79-e12f41fd7cc6/result/aleqt_redis_ar_pages'
-input_str = '/media/shihangyu/302b5584-4afe-4898-8d79-e12f41fd7cc6/result/wiki_redis_ar_pages'
-
+input_str = args.input
 
 files_path = Path(input_str).resolve()
 
@@ -51,7 +52,7 @@ def handle_per_line(line):
     lines = nltk.sent_tokenize(line)
 
     # filter no end dot sentences
-    # lines = [line for line in lines if line.endswith('.')]
+    lines = [line for line in lines if line.endswith('.')]
 
     # filter unwanted chars
     lines = [line for line in lines if not any(substring in line for substring in ['css', 'CSS', '<'])]

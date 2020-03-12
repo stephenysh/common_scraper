@@ -3,16 +3,17 @@ filter data from one .txt files
 return dict record
 '''
 
-from pathlib import Path
-import multiprocessing
+import argparse
 from multiprocessing import Pool
+from pathlib import Path
+
 from util import *
-from collections import Counter
-from pprint import pprint
 
-input_str = '/media/shihangyu/302b5584-4afe-4898-8d79-e12f41fd7cc6/crawl_sinovision.txt'
+parser = argparse.ArgumentParser()
+parser.add_argument('--input', required=True)
+args = parser.parse_args()
 
-files_path = Path(input_str).resolve()
+files_path = Path(args.input).resolve()
 
 assert files_path.exists()
 
@@ -61,8 +62,16 @@ for file in files_iter:
             if read_line_count % 10000 == 0:
                 print(f'lines [{read_line_count: ,}]/[{read_lines_total: ,}]')
 
-for k, v in record.items():
-    pprint(f'{k}: {len(v)}')
+for k in sorted(record.keys()):
+    v = record[k]
+    if isinstance(v, list):
+        print(f'{k:<50}:{len(v): ,}/{len(v) / read_line_count:.6f}')
+    elif isinstance(v, dict):
+        for kk in sorted(v.keys()):
+            print(f'{k}:{kk}: {len(v[kk]): ,}/{len(v[kk]) / read_line_count:.6f}')
+    else:
+        raise RuntimeError('Invalid type of value')
+
 
 
 

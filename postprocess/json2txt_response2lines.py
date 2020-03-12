@@ -5,28 +5,34 @@ extract lines from html of response without any filter or process
 and deduplicate global
 save to new txt file
 '''
+import argparse
 import json
 import time
-from pathlib import Path
-from util import getLogger, htmlResponseToLines
 from multiprocessing import Pool, cpu_count
+from pathlib import Path
+
+from util import getLogger, htmlResponseToLines
+
 
 def multiHandle(line):
-    json_obj = json.loads(line)
-
-    response = json_obj.get('response')
-
-    if response is None: return None
-
+    try:
+        json_obj = json.loads(line)
+        response = json_obj.get('response')
+    except json.JSONDecodeError:
+        logger.error('JSONDecodeError')
+        return []
+    if response is None: return []
     lines = htmlResponseToLines(response)
-
     return lines
 
 pool = Pool(cpu_count())
 
 logger = getLogger('JsonRes2Lines')
 
-input_str = '/media/shihangyu/302b5584-4afe-4898-8d79-e12f41fd7cc6/result/wam.ae_01.jsonl'
+parser = argparse.ArgumentParser()
+parser.add_argument('--input', required=True)
+args = parser.parse_args()
+input_str = args.input
 
 files_path = Path(input_str).resolve()
 

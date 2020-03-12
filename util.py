@@ -1,13 +1,16 @@
-import re
-import mmap
-import redis
 import logging
+import mmap
+import re
+
+import redis
+
 logging.basicConfig(format='[%(asctime)s %(name)s %(filename)s %(funcName)s %(lineno)d %(levelname)s] %(message)s', level=logging.INFO)
 import nltk
 import itertools
 from bs4 import BeautifulSoup
 from html import unescape
 from string import punctuation
+from bisect import bisect_left
 
 REGPATTERNS = {
     'multi_blank': re.compile('\s+'),
@@ -45,8 +48,9 @@ def mostArabicChars(line, threshold=0.8):
 
 
 def arabicCharsRatio(line):
-    ratios = range(0, 1, 0.05)
-    return len(REGPATTERNS['arabic_and_space'].findall(line)) / len(line)
+    ratios = [i / 100 for i in range(5, 100 + 5, 5)]
+    ratio = len(REGPATTERNS['arabic_and_space'].findall(line)) / len(line)
+    return ratios[bisect_left(ratios, ratio)]
 
 
 def arabicWordsNumLimit(line, min_len=5, max_len=100):
