@@ -31,6 +31,7 @@ for file in files_iter:
     total_line += lines
     total_chars += chars_strip
 
+    print(f'file :{file}  total size :{bytes:,} total line: {lines:,} total chars {chars_strip:,} average chars per line {chars_strip / lines:.2f}')
 
 print(
     f'total files No:{len(files_iter):,}  total size :{total_size:,} total line: {total_line:,} total chars {total_chars:,} average chars per line {total_chars / total_line:.2f}')
