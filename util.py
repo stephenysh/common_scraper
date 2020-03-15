@@ -40,6 +40,26 @@ def mapLineCount(filename):
     except:
         return 0
 
+def mapLineCharCount(filename):
+    try:
+        f = open(filename, "r+")
+        buf = mmap.mmap(f.fileno(), 0)
+        lines = 0
+        bytes = 0
+        chars = 0
+        chars_strip = 0
+        while True:
+            line = buf.readline()
+            if not line:
+                break
+            bytes += len(line)
+            line = line.decode('utf-8', errors='ignore')
+            chars += len(line)
+            chars_strip += len(line.strip())
+            lines += 1
+        return lines, bytes, chars, chars_strip
+    except Exception as e:
+        return 0, 0, 0, 0
 
 def getRedisClient(host='localhost', port=6379, db=1):
     return redis.Redis(host=host, port=port, db=db, decode_responses=True)
@@ -183,4 +203,3 @@ def read_file_to_redis(filename, host='localhost', port=6379, db=0):
 
 if __name__ == '__main__':
     print(splitLine('      dasdsad \n fsfsdf \t dsadsad. dasd? da! sd-dasd?    \t\n'))
-    write_redis_to_file('academia.json', db=2)

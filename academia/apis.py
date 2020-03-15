@@ -107,6 +107,8 @@ def downloadPage(book_id, total_pages_num, page_id, cookie, write_dir='./pdf'):
             logger.info(f'Download Success for book {book_id} at page [{page_id}]/[{total_pages_num}]')
             return True
 
+        # sleep longer when reject multiple times
+        time.sleep(10*i)
         headers.update({'Cookie': login()})
 
     logger.error(f'Download Failed for book {book_id} at page {page_id}: invalid response')
