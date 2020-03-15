@@ -1,8 +1,10 @@
-import os
 import json
-import requests
+import os
 import time
 from pathlib import Path
+
+import requests
+
 from util import getLogger
 
 logger = getLogger('AcademiaApis')
@@ -91,13 +93,18 @@ def downloadPage(book_id, total_pages_num, page_id, cookie, write_dir='./pdf'):
 
     # try 10 times
     for i in range(10):
-        response = requests.post(f'https://academia-arabia.com/Pages/{book_id}/{total_pages_num}/{page_id}/false/1/2', headers=headers)
+        try:
+            response = requests.post(
+                f'https://academia-arabia.com/Pages/{book_id}/{total_pages_num}/{page_id}/false/1/2', headers=headers)
+        except:
+            headers.update({'Cookie': login()})
+            continue
 
         if response.status_code == 200:
             # check how many zeros should use to fill the page number
             with open(book_path.joinpath(str(page_id).zfill(len(str(total_pages_num))) + '.pdf'), 'wb') as f:
                 f.write(response.content)
-            logger.info(f'Download Success for book {book_id} at page {page_id}')
+            logger.info(f'Download Success for book {book_id} at page [{page_id}]/[{total_pages_num}]')
             return True
 
         headers.update({'Cookie': login()})

@@ -1,6 +1,7 @@
 import json
 import pickle
 from typing import List
+
 from util import getLogger
 
 logger = getLogger('read_books_json')
@@ -15,7 +16,7 @@ def readBooks() -> List[dict]:
 
     books = []
 
-    with open('/home/shihangyu/Scripts/common_scraper/academia/academia-arabic_id_0.jsonl', 'r', encoding='utf-8') as f:
+    with open('./academia-arabic_id_0.jsonl', 'r', encoding='utf-8') as f:
         for line in f:
             try:
                 jobj = json.loads(line.strip())

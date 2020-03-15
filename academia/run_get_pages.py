@@ -1,7 +1,8 @@
-import pickle
-from util import getLogger
-from academia.read_books_json import readBooks
 from academia.apis import login, downloadPage
+from academia.read_books_json import readBooks
+from util import getLogger
+from util import getRedisClient
+
 '''
 curl "https://academia-arabia.com/Pages/72131/76/${page}/false/1/2" 
 -H 'Sec-Fetch-Mode: cors' 
@@ -14,31 +15,27 @@ curl "https://academia-arabia.com/Pages/72131/76/${page}/false/1/2"
 -H 'Cookie: _ga=GA1.2.355087959.1583647731; _gid=GA1.2.1177952183.1583647731; _culture=en-US; __gads=ID=cdb3a5f28402c03d:T=1583666253:S=ALNI_MaIYp3HDwAT_skRJlxFdrHF5Dfjvw; cb-enabled=accepted; ASP.NET_SessionId=ozkti0ya22cnt5umbxgwj55z; APP-SRV=1; _gat_gtag_UA_23555050_5=1' 
 -H 'Connection: keep-alive'
 '''
+redis_cli = getRedisClient(db=2)
 
 logger = getLogger('Download')
 
-
-
-with open('books.pickle', 'wb') as f:
-    books = pickle.load()
+books = readBooks()
+books = sorted(books, key=lambda d: d['ORG'])
 
 cookie = login()
 if cookie is None:
     exit('log in failed')
 
-
-
 for book in books:
-    successPages = book.setdefault('SuccessPages', [])
     book_id = book.get('ORG')
     total_pages_num = book.get('NumOfPages')
 
     logger.info(f'Downloading book {book_id}')
 
-    for page_id in range(total_pages_num):
-        if page_id in successPages:
+    for page_id in range(1, total_pages_num + 1):
+        if redis_cli.get(f'{book_id}:{page_id}') is not None:
             continue
 
         res = downloadPage(book_id, total_pages_num, page_id, cookie)
         if res is True:
-            successPages.append(page_id)
+            redis_cli.set(f'{book_id}:{page_id}', 1)

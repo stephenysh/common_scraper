@@ -1,13 +1,15 @@
-from pathlib import Path
+import argparse
 import re
+from collections import Counter
+from pathlib import Path
 from pprint import pprint
 from string import punctuation
-from collections import Counter
 
-input_path = Path('/media/shihangyu/302b5584-4afe-4898-8d79-e12f41fd7cc6/cleaned_crawl_sinovision.txt')
-# input_path = Path('/media/shihangyu/302b5584-4afe-4898-8d79-e12f41fd7cc6/result/cleaned_bbc_redis_ar_pages.txt')
+parser = argparse.ArgumentParser()
+parser.add_argument('--input', required=True)
+args = parser.parse_args()
 
-
+input_path = Path(args.input)
 
 unwant_chars_list = []
 

@@ -14,7 +14,7 @@ files_path = Path(args.input).resolve()
 ext = 'txt'
 
 if files_path.is_dir():
-    files_iter = files_path.rglob(f'[!count]*.{ext}')
+    files_iter = [file for file in files_path.rglob(f'*.{ext}')]
 else:
     files_iter = [files_path]
 
@@ -40,4 +40,5 @@ for file in files_iter:
     if total_count % 10000 == 0:
         print(f'file count: {total_count}')
 
-print(f'total files No:{total_count:,}  total size :{total_size:,} total line: {total_line:,} total chars {total_chars:,}')
+print(
+    f'total files No:{total_count:,}  total size :{total_size:,} total line: {total_line:,} total chars {total_chars:,} average chars per line {total_chars / total_line:.2f}')
