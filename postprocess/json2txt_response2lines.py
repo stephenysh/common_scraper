@@ -14,6 +14,8 @@ from pathlib import Path
 from util import getLogger, htmlResponseToLines
 
 
+logger = getLogger('JsonRes2Lines')
+
 def multiHandle(line):
     try:
         json_obj = json.loads(line)
@@ -26,8 +28,6 @@ def multiHandle(line):
     return lines
 
 pool = Pool(cpu_count())
-
-logger = getLogger('JsonRes2Lines')
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--input', required=True)
@@ -60,11 +60,12 @@ for file in files:
 
     t = time.time()
 
-    fr = open(str(file), 'r', encoding='utf-8')
+    fr = open(str(file), 'rb')
 
     for line in fr:
 
-        line = line.strip()
+        line = line.decode('utf-8', errors='ignore').strip()
+        #line = line.strip()
 
         if line == '': continue
 

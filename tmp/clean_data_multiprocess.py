@@ -18,6 +18,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--input', required=True)
 args = parser.parse_args()
 
+ref_pattern = re.compile(r'\[\d+\]')
 split_pattern = re.compile(r'(?<=\w[\.\?\!])[\.\?\!]*\s')
 ar_word_pattern = re.compile('[\u0600-\u06FF]+')
 ar_char_and_space_pattern = re.compile('[\u0600-\u06FF ]')
@@ -46,6 +47,7 @@ else:
 def handle_per_line(line):
     # remove multiple space
     line = re.sub(mul_space_pattern, ' ', line)
+    line = re.sub(ref_pattern, '', line)
 
     # maybe split by dot
     # lines = re.split(split_pattern, line)
