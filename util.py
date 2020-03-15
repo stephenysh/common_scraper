@@ -1,6 +1,8 @@
+import json
 import logging
 import mmap
 import re
+import time
 
 import redis
 
@@ -130,8 +132,55 @@ def filterLineRecord(idx, line) -> dict:
     # filter non arabic
     res.update(arabicCharsRatio={arabicCharsRatio(line): idx})
 
-
     return res
+
+
+def write_redis_to_file(filename, host='localhost', port=6379, db=0):
+    redis_cli = getRedisClient(host=host, port=port, db=db)
+
+    with open(filename, 'w') as fw:
+        count = 0
+        t = time.time()
+        for key in redis_cli.scan_iter():
+            d = dict(key=key, value=redis_cli.get(key))
+            fw.write(json.dumps(d) + '\n')
+            count += 1
+    print(f'total keys {count}')
+    print(f'scan keys use time {time.time() - t}')
+
+    t = time.time()
+    print(f'db size {redis_cli.dbsize()}')
+    print(f'dbsize use time {time.time() - t}')
+
+
+def read_file_to_redis(filename, host='localhost', port=6379, db=0):
+    redis_cli = getRedisClient(host=host, port=port, db=db)
+
+    t = time.time()
+    with open(filename, 'rb') as fr:
+        for line_count, line in enumerate(fr):
+            line = line.decode('utf-8', errors='ignore')
+            line = line.strip()
+
+            try:
+                json_obj = json.loads(line)
+            except json.JSONDecodeError:
+                print('Json Decode Error')
+                continue
+
+            key = json_obj.get('key')
+            value = json_obj.get('value')
+
+            if None in [key, value]:
+                print('Null in key or value')
+                continue
+
+            redis_cli.set(key, value)
+
+    print(f'line count {line_count}')
+    print(f'db size {redis_cli.dbsize()}')
+    print(f'insert use time {time.time() - t}')
 
 if __name__ == '__main__':
     print(splitLine('      dasdsad \n fsfsdf \t dsadsad. dasd? da! sd-dasd?    \t\n'))
+    write_redis_to_file('academia.json', db=2)
