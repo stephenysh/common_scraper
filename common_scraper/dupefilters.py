@@ -6,6 +6,7 @@ from scrapy.utils.request import request_fingerprint
 from scrapy.dupefilters import BaseDupeFilter
 
 from common_scraper.util.redis_util import redis_cli
+from common_scraper.util.url_util import extract_valid_url
 
 class MyDupeFilter(BaseDupeFilter):
     """Request Fingerprint duplicates filter"""
@@ -33,7 +34,7 @@ class MyDupeFilter(BaseDupeFilter):
             self.logger.debug(f'duplicate fingerprints {request}')
             return True
 
-        if redis_cli.get(request.url) == 'True':
+        if redis_cli.get(extract_valid_url(request.url)) == 'True':
             self.logger.debug(f'duplicate in redis {request}')
             return True
 

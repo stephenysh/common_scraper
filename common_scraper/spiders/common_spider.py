@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 from urllib.parse import urlparse, urljoin, unquote
 
@@ -11,6 +12,8 @@ from common_scraper.util.redis_util import redis_cli
 from common_scraper.util.path_util import job_path
 
 from common_scraper.util.cfg_util import url_prefix, url_name, start_url
+
+from common_scraper.util.url_util import extract_valid_url
 
 '''
 1. use redis to share data with multi spider instance
@@ -57,6 +60,8 @@ class CommonSpider(CrawlSpider):
 
         url_unquoted = unquote(response.url)
 
+        url_keep = extract_valid_url(response.url)
+
         # Skip page with error response
         if not response.status == 200:
             self.logger.warning(f'Skip page with error response {url_unquoted}')
@@ -75,7 +80,7 @@ class CommonSpider(CrawlSpider):
         item['date'] = datetime.utcnow()
         item['response'] = response.body.decode('utf-8')
 
-        redis_cli.set(response.url, 'True')
+        redis_cli.set(url_keep, 'True')
 
 
         return item

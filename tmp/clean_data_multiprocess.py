@@ -76,7 +76,7 @@ result_line_count = 0
 result_char_count = 0
 sen_set = set()
 
-pool_size = multiprocessing.cpu_count() * 12
+pool_size = multiprocessing.cpu_count() * 1
 pool = Pool(pool_size)
 
 
