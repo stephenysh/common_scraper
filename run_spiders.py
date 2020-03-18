@@ -21,7 +21,7 @@ def start_spider(idx):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--id', required=True)
+    parser.add_argument('--id', default=1)
     args = parser.parse_args()
 
     settings = get_project_settings()

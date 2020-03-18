@@ -11,7 +11,7 @@ from common_scraper.util.redis_util import redis_cli
 
 from common_scraper.util.path_util import job_path
 
-from common_scraper.util.cfg_util import url_prefix, url_name, start_url
+from common_scraper.util.cfg_util import url_prefix, start_url
 
 from common_scraper.util.url_util import extract_valid_url
 
@@ -21,9 +21,9 @@ from common_scraper.util.url_util import extract_valid_url
 '''
 
 class CommonSpider(CrawlSpider):
-    name = url_name
-
     domain = urlparse(url_prefix).netloc
+
+    name = domain
 
     allowed_domains = [domain]
 
@@ -34,7 +34,7 @@ class CommonSpider(CrawlSpider):
     custom_settings = {
         'FEED_FORMAT': 'jsonlines',
         'FEED_EXPORT_ENCODING': 'utf-8',
-        'JOBDIR': str(job_path / url_name),
+        'JOBDIR': str(job_path / name),
     }
 
 
