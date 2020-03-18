@@ -5,7 +5,8 @@ from pathlib import Path
 from util import getLogger
 logger = getLogger('read_selenium_output')
 
-from postprocess.line_processors import *
+from postprocess.pool_wrapper import PoolWrapper
+
 from util import htmlResponseToLines
 
 if __name__ == '__main__':
@@ -36,6 +37,7 @@ if __name__ == '__main__':
         logger.warning(f'no file found, exit')
         exit(1)
 
+    pw = PoolWrapper(htmlResponseToLines)
 
     for file in files:
         with file.open('rb') as fr:
@@ -45,12 +47,26 @@ if __name__ == '__main__':
                 if line == '':
                     continue
 
-                line = htmlResponseToLines(line)
-                if line is None:
-                    # logger.error(f'file {file} lineno {lineno}')
-                    continue
+                processed, res_list = pw.maybeProcessIfFull()
 
-                if type(line) == str:
-                    fw.write(line + '\n')
-                elif type(line) == list:
-                    fw.writelines(l + '\n' for l in line)
+                if processed:
+                    for res in res_list:
+                        if type(res) == str:
+                            fw.write(res + '\n')
+                        elif type(res) == list:
+                            fw.writelines(l + '\n' for l in res)
+                        else:
+                            raise RuntimeError('Unknown return type')
+
+                pw.addSample(line)
+
+            processed, res = pw.mustProcessUnlessEmpty()
+
+            if processed:
+                for res in res_list:
+                    if type(res) == str:
+                        fw.write(res + '\n')
+                    elif type(res) == list:
+                        fw.writelines(l + '\n' for l in res)
+                    else:
+                        raise RuntimeError('Unknown return type')

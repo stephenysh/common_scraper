@@ -107,7 +107,7 @@ def htmlResponseToLines(response: str):
     3. deduplicate on one page
 
     :param response:
-    :return:
+    :return: list of lines if success, None if fail
     '''
     try:
         soup = BeautifulSoup(response, 'html.parser')
@@ -116,7 +116,7 @@ def htmlResponseToLines(response: str):
 
         lines = list(itertools.chain(*lines2d))
 
-        lines = list(set(lines))
+        lines = list(set(lines)) # deduplicate in one page
 
         lines = [unescape(line) for line in lines]
 
@@ -124,7 +124,7 @@ def htmlResponseToLines(response: str):
 
     except Exception as e:
         logger.error(e)
-        return []
+        return None
 
 def filterLineRecord(idx, line) -> dict:
     res = {}
