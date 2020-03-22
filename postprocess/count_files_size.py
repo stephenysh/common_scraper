@@ -1,9 +1,11 @@
 import argparse
 from pathlib import Path
+
 from util import mapLineCharCount
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--input', required=True)
+parser.add_argument('--pattern')
 args = parser.parse_args()
 
 files_path = Path(args.input).resolve()
@@ -22,7 +24,8 @@ files_path = Path(args.input).resolve()
 ext = 'json'
 
 if files_path.is_dir():
-    files_iter = [file for file in files_path.rglob(f'*.{ext}')]
+    assert args.pattern is not None, 'input directory need file pattern'
+    files_iter = [file for file in files_path.rglob(args.pattern)]
 else:
     files_iter = [files_path]
 
