@@ -3,6 +3,7 @@ import logging
 import mmap
 import re
 import time
+from datetime import datetime
 
 import redis
 
@@ -158,6 +159,11 @@ def filterLineRecord(idx, line) -> dict:
     return res
 
 
+def getTimeStamp():
+    t = datetime.utcnow()
+    return t.strftime('%y%m%d-%H%M%S')
+
+
 def write_redis_to_file(filename, host='localhost', port=6379, db=0):
     redis_cli = getRedisClient(host=host, port=port, db=db)
 
@@ -206,3 +212,4 @@ def read_file_to_redis(filename, host='localhost', port=6379, db=0):
 
 if __name__ == '__main__':
     print(splitLine('      dasdsad \n fsfsdf \t dsadsad. dasd? da! sd-dasd?    \t\n'))
+    print(getTimeStamp())
