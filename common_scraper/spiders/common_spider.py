@@ -1,18 +1,13 @@
-import re
 from datetime import datetime
-from urllib.parse import urlparse, urljoin, unquote
+from urllib.parse import urlparse
 
-from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
+from scrapy.spiders import CrawlSpider, Rule
 
 from common_scraper.items import CommonScraperItem
-
-from common_scraper.util.redis_util import redis_cli
-
-from common_scraper.util.path_util import job_path
-
 from common_scraper.util.cfg_util import url_prefix, start_url
-
+from common_scraper.util.path_util import job_path
+from common_scraper.util.redis_util import redis_cli
 from common_scraper.util.url_util import extract_valid_url
 
 '''
@@ -58,25 +53,24 @@ class CommonSpider(CrawlSpider):
 
     def parse_item(self, response):
 
-        url_unquoted = unquote(response.url)
-
+        # this is for those valid url to duplicate, like with postfix ?page=1, will only keep the valid part of url
         url_keep = extract_valid_url(response.url)
 
         # Skip page with error response
         if not response.status == 200:
-            self.logger.warning(f'Skip page with error response {url_unquoted}')
+            self.logger.warning(f'Skip page with error response {url_keep}')
             return None
 
         # Skip page with error response
         if redis_cli.get(response.url) is not None:
-            self.logger.warning(f'Skip page with duplicate redis record {url_unquoted}')
+            self.logger.warning(f'Skip page with duplicate redis record {url_keep}')
             return None
 
         ################# real process
-        self.logger.info('Found one page! %s', url_unquoted)
+        self.logger.info('Found one page! %s', url_keep)
 
         item = CommonScraperItem()
-        item['url'] = response.url
+        item['url'] = url_keep
         item['date'] = datetime.utcnow()
         item['response'] = response.body.decode('utf-8')
 
