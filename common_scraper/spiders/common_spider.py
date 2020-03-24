@@ -72,7 +72,7 @@ class CommonSpider(CrawlSpider):
         item = CommonScraperItem()
         item['url'] = url_keep
         item['date'] = datetime.utcnow()
-        item['response'] = response.body.decode('utf-8')
+        item['response'] = response.body.decode('utf-8', errors='ignore')
 
         redis_cli.set(url_keep, 'True')
 

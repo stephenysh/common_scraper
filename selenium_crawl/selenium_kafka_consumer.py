@@ -1,39 +1,50 @@
+import argparse
 import os
 import time
 import urllib
-import jsonlines
-import argparse
 from pathlib import Path
-from kafka import KafkaConsumer
+
+import jsonlines
 import selenium.webdriver as webdriver
-from selenium.webdriver.support.ui import WebDriverWait
 import selenium.webdriver.support.expected_conditions as EC
+from kafka import KafkaConsumer
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+
+from util import mapLineCount
+
 
 class TransResult(dict):
     def __init__(self, ar_sen, en_sen, url, err=None):
         dict.__init__(self, ar_sen=ar_sen, en_sen=en_sen, url=url, err=err)
 
 def get_translate(driver: webdriver, input: str) -> tuple:
+    try:
+        # if random.random() < 0:
+        #     raise RuntimeError('Test ERROR')
 
-    assert input is not None
-    assert len(input) != 0
+        assert input is not None
+        assert len(input) != 0
 
-    src_elem = WebDriverWait(driver, 10).until(
-        lambda d: d.find_element_by_css_selector("textarea[id='source']"))
+        src_elem = WebDriverWait(driver, 10).until(
+            lambda d: d.find_element_by_css_selector("textarea[id='source']"))
 
-    src_elem.clear()
-    WebDriverWait(driver, 10).until(
-        lambda d: d.find_element_by_css_selector("div[class='tlid-results-container results-container empty']"))
+        src_elem.clear()
+        WebDriverWait(driver, 10).until(
+            lambda d: d.find_element_by_css_selector("div[class='tlid-results-container results-container empty']"))
 
-    src_elem.send_keys(input)
+        src_elem.send_keys(input)
 
-    time.sleep(3)
+        time.sleep(3)
 
-    out_elem = WebDriverWait(driver, 10).until(
-        lambda d: d.find_element_by_css_selector("span[class='tlid-translation translation'] span"))
+        out_elem = WebDriverWait(driver, 10).until(
+            lambda d: d.find_element_by_css_selector("span[class='tlid-translation translation'] span"))
 
-    return out_elem.text, urllib.parse.unquote(driver.current_url)
+        return out_elem.text, urllib.parse.unquote(driver.current_url)
+
+    except Exception as e:
+        return None, e
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--id', required=True)
@@ -54,13 +65,22 @@ idx_error_saved = 0
 output_lines = []
 error_lines = []
 
-file_save_period = 1000 #lines save once
+file_save_period = 3  # lines save once
 
 t = time.time()
 
 
 save_path = Path(args.out_dir)
 os.makedirs(str(save_path), exist_ok=True)
+
+out_filename = str(save_path / f'consumer_{consumer_id:02d}_output.jsonl')
+err_filename = str(save_path / f'consumer_{consumer_id:02d}_error.jsonl')
+
+fw_out = jsonlines.open(out_filename, 'a')
+fw_err = jsonlines.open(err_filename, 'a')
+
+line_fw = mapLineCount(out_filename)
+line_err = mapLineCount(err_filename)
 
 with webdriver.Chrome() as driver:
     driver.get("https://translate.google.com/")
@@ -79,54 +99,46 @@ with webdriver.Chrome() as driver:
     ar_bnt.click()
 
     try:
-
-        for msg in consumer:
-
+        for idx, msg in enumerate(consumer, start=line_fw + line_err + 1):
             if len(output_lines) == file_save_period:
-                with jsonlines.open(str(save_path / f'consumer_{consumer_id:02d}_output_{idx_output_saved:06d}.jsonl'),
-                                    'w') as fw:
-                    fw.write_all(output_lines)
-                print(f'saveing to output file consumer_{consumer_id:02d}_output_{idx_output_saved:06d}.txt')
+                fw_out.write_all(output_lines)
+                print(f'saved to output file {out_filename}')
                 idx_output_saved += 1
                 output_lines = []
 
             if len(error_lines) == file_save_period:
-                with jsonlines.open(str(save_path / f'consumer_{consumer_id:02d}_error_{idx_error_saved:06d}.jsonl'),
-                                    'w') as fw:
-                    fw.write_all(error_lines)
-                print(f'saveing to error file consumer_{consumer_id:02d}_output_{idx_error_saved:06d}.txt')
+                fw_err.write_all(error_lines)
+                print(f'saved to error file {err_filename}')
                 idx_error_saved += 1
                 error_lines = []
 
-            try:
-                ar_sen = msg.value.decode('utf-8').strip()
+            ar_sen = msg.value.decode('utf-8').strip()
 
-                if ar_sen == '':
-                    continue
+            if ar_sen == '':
+                continue
 
-                en_sen, url = get_translate(driver, ar_sen)
+            en_sen, url = get_translate(driver, ar_sen)
 
+            if en_sen is not None:
+                print(f'[{idx}] SUCCESS msg at partition={msg.partition}, offset={msg.offset}')
                 output_lines.append(TransResult(ar_sen, en_sen, url))
+            else:
+                print(
+                    f'[{idx}] ERROR   msg at partition={msg.partition}, offset={msg.offset}, e={url.__class__.__name__}')
+                error_lines.append(TransResult(ar_sen, None, None, url.__class__.__name__))
 
-                print(f'[{len(output_lines)}] SUCCESS msg at partition={msg.partition}, offset={msg.offset}, timestamp={msg.timestamp}')
-            except Exception as e:
+    except KeyboardInterrupt:
 
-                print(f'[{len(error_lines)}] ERROR msg at partition={msg.partition}, offset={msg.offset}, timestamp={msg.timestamp}, e={e.__class__.__name__}')
-                print(e)
-
-                error_lines.append(TransResult(ar_sen, None, None, e.__class__.__name__))
-
-    except Exception as e:
+        print('Terminating...')
 
         if len(output_lines) > 0:
-            with jsonlines.open(str(save_path / f'consumer_{consumer_id:02d}_output_{idx_output_saved:06d}.jsonl'), 'w') as fw:
-                fw.write_all(output_lines)
+            print(f'Writing [{len(output_lines)}] lines into out file...')
 
+            fw_out.write_all(output_lines)
 
         if len(error_lines) > 0:
-            with jsonlines.open(str(save_path / f'consumer_{consumer_id:02d}_error_{idx_error_saved:06d}.jsonl'), 'w') as fw:
-                fw.write_all(error_lines)
+            print(f'Writing [{len(error_lines)}] lines into err file...')
+            fw_err.write_all(error_lines)
 
-        print(e)
-
-        driver.close()
+    fw_out.close()
+    fw_err.close()
