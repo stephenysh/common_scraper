@@ -1,9 +1,9 @@
 import json
-import re
-import random
 import math
+import random
+
 from util import getLogger
-from util import REGPATTERNS
+
 logger = getLogger('line_processors')
 
 def random_pick(line:str):
@@ -134,8 +134,8 @@ def translate_output_txt2json(line:str):
         logger.warning(f'split line error: {line}')
         return None
 
-    ar_sen = parts[1]
-    en_sen = parts[0]
+    ar_sen = parts[0]
+    en_sen = parts[1]
 
     new_obj = dict(ar_sen=ar_sen, en_sen=en_sen)
 

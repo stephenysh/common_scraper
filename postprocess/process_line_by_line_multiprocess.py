@@ -1,13 +1,14 @@
-import sys
 import argparse
 from pathlib import Path
 
 from util import getLogger
+
 logger = getLogger('read_selenium_output')
 
 from postprocess.pool_wrapper import PoolWrapper
 
 from util import htmlResponseToLines
+from postprocess.line_processors import *
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -51,6 +52,9 @@ if __name__ == '__main__':
 
                 if processed:
                     for res in res_list:
+                        if res is None:
+                            continue
+
                         if type(res) == str:
                             fw.write(res + '\n')
                         elif type(res) == list:
@@ -64,6 +68,9 @@ if __name__ == '__main__':
 
             if processed:
                 for res in res_list:
+                    if res is None:
+                        continue
+
                     if type(res) == str:
                         fw.write(res + '\n')
                     elif type(res) == list:

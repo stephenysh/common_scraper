@@ -1,4 +1,5 @@
 import argparse
+import json
 import os
 import time
 import urllib
@@ -20,7 +21,7 @@ class TransResult(dict):
 
 def get_translate(driver: webdriver, input: str) -> tuple:
     try:
-        # if random.random() < 0:
+        # if random.random() < 1:
         #     raise RuntimeError('Test ERROR')
 
         assert input is not None
@@ -65,7 +66,7 @@ idx_error_saved = 0
 output_lines = []
 error_lines = []
 
-file_save_period = 3  # lines save once
+file_save_period = 100  # lines save once
 
 t = time.time()
 
@@ -112,7 +113,12 @@ with webdriver.Chrome() as driver:
                 idx_error_saved += 1
                 error_lines = []
 
-            ar_sen = msg.value.decode('utf-8').strip()
+            json_str = msg.value.decode('utf-8').strip()
+
+            json_obj = json.loads(json_str)
+
+            input_idx = json_obj.get('idx')
+            ar_sen = json_obj.get('text')
 
             if ar_sen == '':
                 continue
@@ -120,11 +126,11 @@ with webdriver.Chrome() as driver:
             en_sen, url = get_translate(driver, ar_sen)
 
             if en_sen is not None:
-                print(f'[{idx}] SUCCESS msg at partition={msg.partition}, offset={msg.offset}')
+                print(f'[{idx}] SUCCESS msg at input_idx={input_idx}, partition={msg.partition}, offset={msg.offset}')
                 output_lines.append(TransResult(ar_sen, en_sen, url))
             else:
                 print(
-                    f'[{idx}] ERROR   msg at partition={msg.partition}, offset={msg.offset}, e={url.__class__.__name__}')
+                    f'[{idx}] ERROR   msg at input_idx={input_idx}, partition={msg.partition}, offset={msg.offset}, e={url.__class__.__name__}')
                 error_lines.append(TransResult(ar_sen, None, None, url.__class__.__name__))
 
     except KeyboardInterrupt:

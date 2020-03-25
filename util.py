@@ -7,7 +7,7 @@ from datetime import datetime
 
 import redis
 
-logging.basicConfig(format='[%(asctime)s %(name)s %(filename)s %(funcName)s %(lineno)d %(levelname)s] %(message)s', level=logging.INFO)
+logging.basicConfig(format='[%(asctime)s %(filename)s %(lineno)d %(levelname)s] %(message)s', level=logging.INFO)
 import nltk
 import itertools
 from bs4 import BeautifulSoup
