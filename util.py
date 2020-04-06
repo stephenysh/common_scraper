@@ -210,6 +210,17 @@ def read_file_to_redis(filename, host='localhost', port=6379, db=0):
     print(f'db size {redis_cli.dbsize()}')
     print(f'insert use time {time.time() - t}')
 
+
+def timeit(method):
+    def timed(*args, **kw):
+        ts = time.time()
+        result = method(*args, **kw)
+        te = time.time()
+        print(f'{method.__name__} time {(te - ts) * 1000: .2f}')
+        return result
+
+    return timed
+
 if __name__ == '__main__':
     print(splitLine('      dasdsad \n fsfsdf \t dsadsad. dasd? da! sd-dasd?    \t\n'))
     print(getTimeStamp())

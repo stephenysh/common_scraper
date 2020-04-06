@@ -1,12 +1,11 @@
-import sys
 import argparse
 from pathlib import Path
 
 from util import getLogger
+
 logger = getLogger('read_selenium_output')
 
 from postprocess.line_processors import *
-from util import htmlResponseToLines
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -45,12 +44,12 @@ if __name__ == '__main__':
                 if line == '':
                     continue
 
-                line = htmlResponseToLines(line)
+                line = check_result(line, lineno)
                 if line is None:
                     # logger.error(f'file {file} lineno {lineno}')
                     continue
 
-                if type(line) == str:
-                    fw.write(line + '\n')
-                elif type(line) == list:
-                    fw.writelines(l + '\n' for l in line)
+                # if type(line) == str:
+                #     fw.write(line + '\n')
+                # elif type(line) == list:
+                #     fw.writelines(l + '\n' for l in line)

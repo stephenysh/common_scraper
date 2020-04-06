@@ -7,7 +7,8 @@ from util import getLogger
 
 logger = getLogger('read_books_json')
 
-def readBooks() -> List[dict]:
+
+def readBooks(filename) -> List[dict]:
     '''
     get list of book dict from local json file
     :return:
@@ -17,7 +18,7 @@ def readBooks() -> List[dict]:
 
     books = []
 
-    with open(Path(__file__).with_name('academia-arabic_id_0.jsonl'), 'r', encoding='utf-8') as f:
+    with open(Path(__file__).with_name(filename), 'r', encoding='utf-8') as f:
         for line in f:
             try:
                 jobj = json.loads(line.strip())

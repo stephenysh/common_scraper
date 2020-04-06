@@ -75,7 +75,7 @@ def loadTitles(PageNumber, cookie):
     return response.status_code, res['TitleListItemVM']
 
 
-def downloadPage(book_id, total_pages_num, page_id, cookie, write_dir='./pdf'):
+def downloadPage(iter_id, book_id, total_pages_num, page_id, cookie, write_dir='./pdf'):
     book_path = Path(write_dir).resolve().joinpath(str(book_id))
     os.makedirs(str(book_path), exist_ok=True)
 
@@ -104,13 +104,13 @@ def downloadPage(book_id, total_pages_num, page_id, cookie, write_dir='./pdf'):
             # check how many zeros should use to fill the page number
             with open(book_path.joinpath(str(page_id).zfill(len(str(total_pages_num))) + '.pdf'), 'wb') as f:
                 f.write(response.content)
-            logger.info(f'Download Success for book {book_id} at page [{page_id}]/[{total_pages_num}]')
+            logger.info(f'[{iter_id}] Download Success for book {book_id} at page [{page_id}]/[{total_pages_num}]')
             return True
 
         # sleep longer when reject multiple times
         time.sleep(10*i)
         headers.update({'Cookie': login()})
 
-    logger.error(f'Download Failed for book {book_id} at page {page_id}: invalid response')
+    logger.error(f'[{iter_id}] Download Failed for book {book_id} at page {page_id}: invalid response')
 
     return False
