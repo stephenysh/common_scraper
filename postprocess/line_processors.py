@@ -2,7 +2,7 @@ import json
 import math
 import random
 
-from util import getLogger
+from util.log_util import getLogger
 
 logger = getLogger('line_processors')
 

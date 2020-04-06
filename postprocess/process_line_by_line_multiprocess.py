@@ -1,16 +1,16 @@
 import argparse
 from pathlib import Path
 
-from util import getLogger
+from tqdm import tqdm
 
-logger = getLogger('read_selenium_output')
-
-from postprocess.pool_wrapper import PoolWrapper
-
-from util import htmlResponseToLines
 from postprocess.line_processors import *
+from postprocess.pool_wrapper import PoolWrapper
+from processor.html_processor import htmlResponseToLines
+from util.util import mapLineCount
 
 if __name__ == '__main__':
+    logger = getLogger('read_selenium_output')
+
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--input', required=True)
@@ -34,7 +34,7 @@ if __name__ == '__main__':
         files = [input_path]
 
     if result_need_save:
-        output_path = input_path.parent.joinpath(f'{input_path.name}{args.postfix}')
+        output_path = input_path.parent.joinpath(f'{input_path.name}_{args.postfix}')
         fw = output_path.open('w')
         logger.info(f'write file into {output_path}')
 
@@ -45,8 +45,11 @@ if __name__ == '__main__':
     pw = PoolWrapper(htmlResponseToLines)
 
     for file in files:
+
+        total_line_num = mapLineCount(str(file))
+
         with file.open('rb') as fr:
-            for lineno, line in enumerate(fr):
+            for lineno, line in tqdm(enumerate(fr), total=total_line_num):
                 line = line.decode('utf-8', errors='ignore')
                 line = line.strip()
                 if line == '':

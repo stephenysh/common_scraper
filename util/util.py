@@ -1,36 +1,18 @@
 import json
-import logging
 import mmap
-import re
 import time
 from datetime import datetime
 
 import redis
 
-logging.basicConfig(format='[%(asctime)s %(filename)s %(lineno)d %(levelname)s] %(message)s', level=logging.INFO)
-import nltk
-import itertools
-from bs4 import BeautifulSoup
-from html import unescape
-from string import punctuation
-from bisect import bisect_left
-
-REGPATTERNS = {
-    'multi_blank': re.compile('\s+'),
-    'html_maybe_text': re.compile(r'^p$|^h[1-6]$|^span$'),
-    'arabic_chars_and_space': re.compile('[\u0600-\u06FF ]'),
-    'english_chars_and_space': re.compile('[a-zA-Z ]'),
-    'arabic_chars': re.compile('[\u0600-\u06FF]'),
-    'english_chars': re.compile('[a-zA-Z]'),
-    'arabic_words': re.compile('[\u0600-\u06FF]+'),
-    'bad_chars': re.compile(rf'[^\”\“\«\»\-\–\…\″\’\‘\‑\u202a\u202b\u202c\u202d\u202e\u200b\u200c\u200d\u200e\u200f\u0600-\u06FFa-zA-Z\d '+ ''.join([rf"\\{i}" for i in punctuation]) + ']+')
-}
-
-def getLogger(name):
-
-    return logging.getLogger(name)
+from util.log_util import getLogger
+from util.nlp_util import splitLine
+from util.regex_util import REGPATTERNS
 
 logger = getLogger('Util')
+
+from bisect import bisect_left
+
 
 def mapLineCount(filename):
     try:
@@ -87,13 +69,6 @@ def arabicWordsNumLimit(line, min_len=5, max_len=100):
 def arabicWordsNum(line):
     return len(REGPATTERNS['arabic_words'].findall(line))
 
-def splitLine(line):
-    lines = nltk.sent_tokenize(line)
-    lines_2d = [line.split('\n') for line in lines]
-    lines = list(itertools.chain(*lines_2d))
-    lines = [REGPATTERNS['multi_blank'].sub(' ', line.strip()) for line in lines if line.strip() != '']
-    return lines
-
 
 def hasBadPhrases(line):
     return not any(substring in line for substring in ['css', 'CSS', '<'])
@@ -101,31 +76,6 @@ def hasBadPhrases(line):
 def hasBadChars(line):
     return len(REGPATTERNS['bad_chars'].findall(line)) > 0
 
-def htmlResponseToLines(response: str):
-    '''
-    1. split by nltk and \n
-    2. remove continuing blank
-    3. deduplicate on one page
-
-    :param response:
-    :return: list of lines if success, None if fail
-    '''
-    try:
-        soup = BeautifulSoup(response, 'html.parser')
-
-        lines2d = [splitLine(para.get_text()) for para in soup.body.find_all(REGPATTERNS['html_maybe_text'])]
-
-        lines = list(itertools.chain(*lines2d))
-
-        lines = list(set(lines)) # deduplicate in one page
-
-        lines = [unescape(line) for line in lines]
-
-        return lines
-
-    except Exception as e:
-        logger.error(e)
-        return None
 
 def filterLineRecord(idx, line) -> dict:
     res = {}

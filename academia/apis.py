@@ -5,7 +5,7 @@ from pathlib import Path
 
 import requests
 
-from util import getLogger
+from util.log_util import getLogger
 
 logger = getLogger('AcademiaApis')
 

@@ -1,7 +1,7 @@
 import argparse
 from pathlib import Path
 
-from util import getLogger
+from util.log_util import getLogger
 
 logger = getLogger('read_selenium_output')
 

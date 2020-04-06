@@ -3,7 +3,7 @@ import pickle
 from pathlib import Path
 from typing import List
 
-from util import getLogger
+from util.log_util import getLogger
 
 logger = getLogger('read_books_json')
 

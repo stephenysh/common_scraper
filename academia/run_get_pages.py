@@ -2,8 +2,8 @@ import argparse
 
 from academia.apis import login, downloadPage
 from academia.read_books_json import readBooks
-from util import getLogger
 from util import getRedisClient
+from util.log_util import getLogger
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--filename", required=True)
