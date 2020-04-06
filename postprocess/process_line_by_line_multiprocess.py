@@ -16,8 +16,11 @@ if __name__ == '__main__':
     parser.add_argument('--input', required=True)
     parser.add_argument('--pattern')
     parser.add_argument('--postfix', required=True)
+    parser.add_argument('--save', default=True)
 
     args = parser.parse_args()
+
+    result_need_save = args.save
 
     input_path = Path(args.input)
 
@@ -30,9 +33,10 @@ if __name__ == '__main__':
     else:
         files = [input_path]
 
-    output_path = input_path.parent.joinpath(f'{input_path.stem}{args.postfix}')
-    fw = output_path.open('w')
-    logger.info(f'write file into {output_path}')
+    if result_need_save:
+        output_path = input_path.parent.joinpath(f'{input_path.name}{args.postfix}')
+        fw = output_path.open('w')
+        logger.info(f'write file into {output_path}')
 
     if len(files) == 0:
         logger.warning(f'no file found, exit')
@@ -51,6 +55,24 @@ if __name__ == '__main__':
                 processed, res_list = pw.maybeProcessIfFull()
 
                 if processed:
+                    if result_need_save:
+                        for res in res_list:
+                            if res is None:
+                                continue
+
+                            if type(res) == str:
+                                fw.write(res + '\n')
+                            elif type(res) == list:
+                                fw.writelines(l + '\n' for l in res)
+                            else:
+                                raise RuntimeError('Unknown return type')
+
+                pw.addSample(line)
+
+            processed, res = pw.mustProcessUnlessEmpty()
+
+            if processed:
+                if result_need_save:
                     for res in res_list:
                         if res is None:
                             continue
@@ -61,19 +83,3 @@ if __name__ == '__main__':
                             fw.writelines(l + '\n' for l in res)
                         else:
                             raise RuntimeError('Unknown return type')
-
-                pw.addSample(line)
-
-            processed, res = pw.mustProcessUnlessEmpty()
-
-            if processed:
-                for res in res_list:
-                    if res is None:
-                        continue
-
-                    if type(res) == str:
-                        fw.write(res + '\n')
-                    elif type(res) == list:
-                        fw.writelines(l + '\n' for l in res)
-                    else:
-                        raise RuntimeError('Unknown return type')
