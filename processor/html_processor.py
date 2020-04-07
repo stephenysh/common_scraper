@@ -1,12 +1,10 @@
-import itertools
+import json
 from html import unescape
 from typing import Optional, List
 
-from bs4 import BeautifulSoup
+from lxml import html
 
 from util.log_util import getLogger
-from util.nlp_util import splitLine
-from util.regex_util import REGPATTERNS
 
 logger = getLogger(__file__)
 
@@ -20,12 +18,19 @@ def htmlResponseToLines(response: str) -> Optional[List[str]]:
     :param response:
     :return: list of lines if success, None if fail
     '''
+
+    json_obj = json.loads(response)
+
+    response = json_obj.get('response')
+
     try:
-        soup = BeautifulSoup(response, 'html.parser')
+        # soup = BeautifulSoup(response, 'html.parser')
 
-        lines2d = [splitLine(para.get_text()) for para in soup.body.find_all(REGPATTERNS['html_maybe_text'])]
+        # lines2d = [splitLine(para.get_text()) for para in soup.body.find_all(re.compile(r'^p$|^h[1-6]$|^span$|^a$|^li$'))]
 
-        lines = list(itertools.chain(*lines2d))
+        # lines = list(itertools.chain(*lines2d))
+
+        lines = [l.strip() for l in html.fromstring(response).xpath('//body//text()') if l.strip() != '']
 
         lines = list(set(lines))  # deduplicate in one page
 

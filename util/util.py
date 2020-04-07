@@ -3,10 +3,9 @@ import mmap
 import time
 from datetime import datetime
 
-import redis
-
 from util.log_util import getLogger
 from util.nlp_util import splitLine
+from util.redis_util import getRedisClient
 from util.regex_util import REGPATTERNS
 
 logger = getLogger('Util')
@@ -47,34 +46,31 @@ def mapLineCharCount(filename):
     except Exception as e:
         return 0, 0, 0, 0
 
-def getRedisClient(host='localhost', port=6379, db=1):
-    return redis.Redis(host=host, port=port, db=db, decode_responses=True)
-
 
 def mostArabicChars(line, threshold=0.8):
-    return len(REGPATTERNS['arabic_and_space'].findall(line)) / len(line) > threshold
+    return len(REGPATTERNS.arabic_chars_and_space.findall(line)) / len(line) > threshold
 
 
 def arabicCharsRatio(line):
     ratios = [i / 100 for i in range(5, 100 + 5, 5)]
-    ratio = len(REGPATTERNS['arabic_and_space'].findall(line)) / len(line)
+    ratio = len(REGPATTERNS.arabic_chars_and_space.findall(line)) / len(line)
     return ratios[bisect_left(ratios, ratio)]
 
 
 def arabicWordsNumLimit(line, min_len=5, max_len=100):
-    length = len(REGPATTERNS['arabic_words'].findall(line))
+    length = len(REGPATTERNS.arabic_words.findall(line))
     return min_len <= length <= max_len
 
 
 def arabicWordsNum(line):
-    return len(REGPATTERNS['arabic_words'].findall(line))
+    return len(REGPATTERNS.arabic_words.findall(line))
 
 
 def hasBadPhrases(line):
     return not any(substring in line for substring in ['css', 'CSS', '<'])
 
 def hasBadChars(line):
-    return len(REGPATTERNS['bad_chars'].findall(line)) > 0
+    return len(REGPATTERNS.bad_chars.findall(line)) > 0
 
 
 def filterLineRecord(idx, line) -> dict:

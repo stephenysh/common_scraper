@@ -1,7 +1,7 @@
 import argparse
 from pathlib import Path
 
-from util import mapLineCharCount
+from util.util import mapLineCharCount
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--input', required=True)
