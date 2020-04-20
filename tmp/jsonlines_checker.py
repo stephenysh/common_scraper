@@ -1,6 +1,6 @@
+import logging
 from pathlib import Path
 
-import logging
 logging.basicConfig(format='[%(asctime)s %(name)s %(filename)s %(funcName)s %(lineno)d %(levelname)s] %(message)s', level=logging.DEBUG)
 
 from typing import List
@@ -115,8 +115,8 @@ class JsonLinesChecker:
 if __name__ == '__main__':
 
     jc = JsonLinesChecker(
-        # json_files=['/media/shihangyu/302b5584-4afe-4898-8d79-e12f41fd7cc6/result/bbc_redis_ar_jsons/bbc_redis_ar_08.json'],
-        json_files_folder='/media/shihangyu/302b5584-4afe-4898-8d79-e12f41fd7cc6/result/aleqt_redis_ar_jsons',
+        # json_files=['/hdd/result/bbc_redis_ar_jsons/bbc_redis_ar_08.json'],
+        json_files_folder='/hdd/result/aleqt_redis_ar_jsons',
     )
     
     jc.check()

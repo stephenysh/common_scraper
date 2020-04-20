@@ -3,6 +3,7 @@
 # pip install deepspeech-gpu
 # brew install sox / apt-get install sox
 
+import json
 import shlex
 import subprocess
 import wave
@@ -65,8 +66,8 @@ class DeepSpeechRecognizer:
         fs = fin.getframerate()
 
         if fs != self.desired_sample_rate:
-            self.logger.warning(f'Warning: original sample rate ({fs}) is different than {self.desired_sample_rate}hz. '
-                                f'Resampling might produce erratic speech recognition.')
+            # self.logger.warning(f'Warning: original sample rate ({fs}) is different than {self.desired_sample_rate}hz. '
+            #                     f'Resampling might produce erratic speech recognition.')
             fs, audio = self.__convert_samplerate(audio_path)
         else:
             audio = np.frombuffer(fin.readframes(fin.getnframes()), np.int16)
@@ -79,6 +80,16 @@ class DeepSpeechRecognizer:
 
         return output
 
+
+def read_file_asr(line: str):
+    asr_service = DeepSpeechRecognizer()
+
+    wavname = line.split(' ')[0]
+    wavpath = Path("/Users/shihangyu/Downloads/LibriSpeech_merged/test-clean/flac").joinpath(f'{wavname}.flac')
+    label = ' '.join(line.split(' ')[1:])
+    infer = asr_service.inference(str(wavpath))
+    json_str = json.dumps(dict(wavname=wavname, label=label, ds_infer=infer))
+    return json_str
 
 if __name__ == "__main__":
     ds = DeepSpeechRecognizer()

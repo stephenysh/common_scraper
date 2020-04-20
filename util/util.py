@@ -4,7 +4,6 @@ import time
 from datetime import datetime
 
 from util.log_util import getLogger
-from util.nlp_util import splitLine
 from util.redis_util import getRedisClient
 from util.regex_util import REGPATTERNS
 
@@ -168,5 +167,4 @@ def timeit(method):
     return timed
 
 if __name__ == '__main__':
-    print(splitLine('      dasdsad \n fsfsdf \t dsadsad. dasd? da! sd-dasd?    \t\n'))
     print(getTimeStamp())

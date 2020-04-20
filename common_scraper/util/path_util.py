@@ -1,11 +1,12 @@
 import os
-import common_scraper
 from pathlib import Path
+
+import common_scraper
 
 project_path = Path(common_scraper.__file__).parent.parent
 
 # result_path = project_path.joinpath('result')
-result_path = Path('/media/shihangyu/302b5584-4afe-4898-8d79-e12f41fd7cc6/crawl_result')
+result_path = Path('/hdd/crawl_result')
 os.makedirs(result_path, exist_ok=True)
 
 job_path = project_path.joinpath('job')

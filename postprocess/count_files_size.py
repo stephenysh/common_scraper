@@ -10,15 +10,15 @@ args = parser.parse_args()
 
 files_path = Path(args.input).resolve()
 # total files No:1  total size :11,154,313 total line: 41,000 total chars 6,101,656 average chars per line 148.82
-# /media/shihangyu/302b5584-4afe-4898-8d79-e12f41fd7cc6/kafka_selenium_google_translate.txt
+# /hdd/kafka_selenium_google_translate.txt
 
 # total files No:1  total size :985,052,949 total line: 4,198,263 total chars 541,499,745 average chars per line 128.98
-# /media/shihangyu/302b5584-4afe-4898-8d79-e12f41fd7cc6/all.txt
+# /hdd/all.txt
 
 # total files No:1  total size :140,957,725 total line: 600,259 total chars 77,487,623 average chars per line 129.09
-# /media/shihangyu/302b5584-4afe-4898-8d79-e12f41fd7cc6/all.test
+# /hdd/all.test
 
-# files_path = Path('/media/shihangyu/302b5584-4afe-4898-8d79-e12f41fd7cc6/result/cleaned_bbc_redis_ar_pages.txt').resolve()
+# files_path = Path('/hdd/result/cleaned_bbc_redis_ar_pages.txt').resolve()
 
 
 ext = 'json'

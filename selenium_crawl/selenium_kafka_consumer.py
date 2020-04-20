@@ -49,7 +49,7 @@ def get_translate(driver: webdriver, input: str) -> tuple:
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--id', required=True)
-parser.add_argument('--out_dir', default='/media/shihangyu/302b5584-4afe-4898-8d79-e12f41fd7cc6/kafka_selenium_google_translate')
+parser.add_argument('--out_dir', default='/hdd/kafka_selenium_google_translate')
 
 args = parser.parse_args()
 consumer_id = int(args.id)

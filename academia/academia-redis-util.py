@@ -1,12 +1,12 @@
 from pathlib import Path
 
-from util import getRedisClient
+from util.redis_util import getRedisClient
 
 
 def write_pdf_to_redis():
     redis_cli = getRedisClient(db=0)
 
-    read_path = Path('/media/shihangyu/302b5584-4afe-4898-8d79-e12f41fd7cc6/academia-pdf')
+    read_path = Path('/hdd/academia-pdf')
 
     books = read_path.glob("*")
     books = sorted(books, key=lambda p: int(p.name))
@@ -24,13 +24,22 @@ def write_pdf_to_redis():
             redis_cli.set(f'{book_id}:{page_id}', 1)
 
 
-def count_pdf_num():
-    read_path = Path('/media/shihangyu/302b5584-4afe-4898-8d79-e12f41fd7cc6/academia-pdf')
+def count_page_num():
+    read_path = Path('/hdd/academia-pdf')
 
     pdfs = read_path.rglob("*.pdf")
 
     print(len([pdf for pdf in pdfs]))
 
 
+def count_book_num():
+    read_path = Path('/hdd/academia-pdf')
+
+    pdfs = read_path.glob("*")
+
+    print(len([pdf for pdf in pdfs]))
+
+
 if __name__ == '__main__':
-    write_pdf_to_redis()
+    count_book_num()
+    # write_pdf_to_redis()

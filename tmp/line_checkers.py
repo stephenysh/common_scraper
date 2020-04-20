@@ -1,9 +1,11 @@
+import json
 import os
 import re
-import json
+from abc import ABC, abstractmethod
+
 import redis
 from bs4 import BeautifulSoup
-from abc import ABC, abstractmethod
+
 
 class AbstractLineChecker(ABC):
 
@@ -84,7 +86,7 @@ class ExtracLinesLineChecker(AbstractLineChecker):
 
         soup = BeautifulSoup(response, 'html.parser')
 
-        pages_dir = '/media/shihangyu/302b5584-4afe-4898-8d79-e12f41fd7cc6/result/aleqt_redis_ar_pages'
+        pages_dir = '/hdd/result/aleqt_redis_ar_pages'
 
         os.makedirs(pages_dir, exist_ok=True)
 

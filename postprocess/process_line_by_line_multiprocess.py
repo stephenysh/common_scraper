@@ -4,7 +4,7 @@ from pathlib import Path
 from tqdm import tqdm
 
 from postprocess.pool_wrapper import PoolWrapper
-from processor.html_processor import htmlResponseToLines
+from processor.check_domain_processor import check_domain
 from util.log_util import getLogger
 from util.redis_util import getRedisClient
 from util.util import mapLineCount
@@ -35,7 +35,7 @@ if __name__ == '__main__':
 
     print(args)
 
-    pw = PoolWrapper(htmlResponseToLines, poolsize=1)
+    pw = PoolWrapper(check_domain)
 
     if input_path.is_dir():
         assert args.pattern is not None
@@ -56,7 +56,7 @@ if __name__ == '__main__':
             logger.info(f'write file into file: {output_path}')
 
         total_line_num = mapLineCount(str(file))
-
+        logger.info(f"process {file}")
         with file.open('rb') as fr:
             for lineno, line in tqdm(enumerate(fr), total=total_line_num):
                 line = line.decode('utf-8', errors='ignore')
@@ -81,7 +81,7 @@ if __name__ == '__main__':
                             else:
                                 raise RuntimeError('Unknown return type')
 
-                pw.addSample(line)
+                pw.addSample(line, line_key)
 
             processed, res = pw.mustProcessUnlessEmpty()
 

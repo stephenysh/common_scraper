@@ -2,8 +2,8 @@ import argparse
 
 from academia.apis import login, downloadPage
 from academia.read_books_json import readBooks
-from util import getRedisClient
 from util.log_util import getLogger
+from util.redis_util import getRedisClient
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--filename", required=True)
@@ -40,11 +40,15 @@ for iter_id, book in enumerate(books):
 
     logger.info(f'Downloading book {book_id}')
 
+    # page_id from 1 to total_pages_num
+    # range(1, total_pages_num + 1)
+    # random.randint(1, total_pages_num)
+    # page_id = random.randint(1, total_pages_num)
     for page_id in range(1, total_pages_num + 1):
         if redis_cli.get(f'{book_id}:{page_id}') is not None:
             continue
 
         res = downloadPage(iter_id, book_id, total_pages_num, page_id, cookie,
-                           write_dir='/media/shihangyu/302b5584-4afe-4898-8d79-e12f41fd7cc6/academia-pdf')
+                           write_dir='/hdd/academia-pdf')
         if res is True:
             redis_cli.set(f'{book_id}:{page_id}', 1)

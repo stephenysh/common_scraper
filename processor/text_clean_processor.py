@@ -1,3 +1,4 @@
+import re
 from typing import Optional
 
 from util.redis_util import getRedisClient
@@ -8,6 +9,7 @@ redis_cli = getRedisClient(db=15)
 
 def clean_arabic_text(text: str) -> Optional[str]:
     text = text.replace('\\n', '')
+    text = re.sub(re.compile(r'\s+'), ' ', text)
     text = text.strip()
     if text == '':
         return None

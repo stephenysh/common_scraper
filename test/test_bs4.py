@@ -1,10 +1,11 @@
+import json
 import re
 import sys
-import json
 from pathlib import Path
+
 from bs4 import BeautifulSoup
 
-files_path = Path('/media/shihangyu/302b5584-4afe-4898-8d79-e12f41fd7cc6/result/bbc_redis_ar_jsons').resolve()
+files_path = Path('/hdd/result/bbc_redis_ar_jsons').resolve()
 ext = '.json'
 
 

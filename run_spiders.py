@@ -21,15 +21,14 @@ def start_spider(idx):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--id', default=1)
     args = parser.parse_args()
 
     settings = get_project_settings()
-    json_file = str(result_path / f'{CommonSpider.domain}_{int(args.id):02d}.json')
+    json_file = str(result_path / f'{CommonSpider.domain}.json')
     settings.attributes['FEED_URI'].set(json_file, 0)
 
     crawler = CrawlerProcess(settings)
-    crawler.crawl(CommonSpider, id=args.id)
+    crawler.crawl(CommonSpider)
     crawler.start()
 
 

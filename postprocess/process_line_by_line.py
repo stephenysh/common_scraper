@@ -1,7 +1,12 @@
 import argparse
 from pathlib import Path
 
+from tqdm import tqdm
+
+from processor.asr.yitu_asr_processor import yitu_asr_wrapper
 from util.log_util import getLogger
+from util.redis_util import getRedisClient
+from util.util import mapLineCount
 
 logger = getLogger('read_selenium_output')
 
@@ -12,7 +17,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--input', required=True)
     parser.add_argument('--pattern')
-    parser.add_argument('--postfix', required=True)
+    parser.add_argument('--postfix')
 
     args = parser.parse_args()
 
@@ -35,21 +40,26 @@ if __name__ == '__main__':
         logger.warning(f'no file found, exit')
         exit(1)
 
+    redis_cli = getRedisClient(db=0)
 
     for file in files:
+        total_line_num = mapLineCount(str(file))
+        fw = file.parent.joinpath(f'{file.name}_{args.postfix}').open('w')
+
         with file.open('rb') as fr:
-            for lineno, line in enumerate(fr):
+            for lineno, line in tqdm(enumerate(fr, start=1), total=total_line_num):
+
                 line = line.decode('utf-8', errors='ignore')
                 line = line.strip()
                 if line == '':
                     continue
 
-                line = check_result(line, lineno)
-                if line is None:
-                    # logger.error(f'file {file} lineno {lineno}')
+                line_key = f"{file}:{lineno}"
+
+                redis_line = redis_cli.get(line_key)
+                if redis_line is not None:
                     continue
 
-                # if type(line) == str:
-                #     fw.write(line + '\n')
-                # elif type(line) == list:
-                #     fw.writelines(l + '\n' for l in line)
+                res = yitu_asr_wrapper(line, line_key)
+
+                fw.write(res + '\n')
