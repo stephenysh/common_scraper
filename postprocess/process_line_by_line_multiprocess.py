@@ -2,14 +2,16 @@ import argparse
 from pathlib import Path
 
 from tqdm import tqdm
-
-from postprocess.pool_wrapper import PoolWrapper
-from processor.check_domain_processor import check_domain
-from util.log_util import getLogger
-from util.redis_util import getRedisClient
 from util.util import mapLineCount
 
+from postprocess.pool_wrapper import PoolWrapper
+from classification_data_eng.cnn.cnn_extractor import extract
+from util.log_util import getLogger
+from util.redis_util import getRedisClient
+
 if __name__ == '__main__':
+    pw = PoolWrapper(extract, poolsize=1)
+
     logger = getLogger('process_line_by_line_multiprocess')
 
     parser = argparse.ArgumentParser()
@@ -35,8 +37,6 @@ if __name__ == '__main__':
 
     print(args)
 
-    pw = PoolWrapper(check_domain)
-
     if input_path.is_dir():
         assert args.pattern is not None
         logger.info(f'find files in {input_path}/{args.pattern}')
@@ -55,10 +55,11 @@ if __name__ == '__main__':
             fw = output_path.open('w')
             logger.info(f'write file into file: {output_path}')
 
-        total_line_num = mapLineCount(str(file))
+        # total_line_num = mapLineCount(str(file))
         logger.info(f"process {file}")
         with file.open('rb') as fr:
-            for lineno, line in tqdm(enumerate(fr), total=total_line_num):
+            # for lineno, line in tqdm(enumerate(fr), total=total_line_num):
+            for lineno, line in enumerate(fr):
                 line = line.decode('utf-8', errors='ignore')
                 line = line.strip()
 

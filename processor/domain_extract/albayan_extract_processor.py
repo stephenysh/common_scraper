@@ -33,6 +33,27 @@ albayan_labels = [
 albayan_labels_eng = [t[2] for t in albayan_labels]
 albayan_labels_arab = [t[0] for t in albayan_labels]
 
+def check_all_labels(line: str, line_key:str):
+    from util.redis_util import getRedisClient
+    cli = getRedisClient(db=14)
+
+    json_obj = json.loads(line)
+
+    url = json_obj.get('url')
+
+    url_parsed = urllib.parse.urlparse(url)
+
+    if url_parsed.netloc != "www.albayan.ae":
+        return None
+    if url_parsed.query != '':
+        return None
+
+    path_words = [w for w in url_parsed.path.split("/") if w != '']
+
+    if not re.match(r"^[\d\.\-]+$", path_words[-1]):
+        return None
+
+    cli.set(f"{path_words[0]}|{url}", 1)
 
 def albayan_extractor(line: str) -> Optional[str]:
     json_obj = json.loads(line)

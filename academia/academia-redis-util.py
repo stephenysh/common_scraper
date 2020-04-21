@@ -41,5 +41,5 @@ def count_book_num():
 
 
 if __name__ == '__main__':
-    count_book_num()
-    # write_pdf_to_redis()
+    # count_book_num()
+    write_pdf_to_redis()

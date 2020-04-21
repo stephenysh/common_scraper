@@ -1,9 +1,12 @@
 import json
-
+import re
+from urllib.parse import unquote
 import requests
 
 from util.log_util import getLogger
 from util.redis_util import getRedisClient
+
+from bs4 import BeautifulSoup
 
 logger = getLogger("daypop_apis")
 categorys = ["UAE", "Arab", "World", "Entertainment", "Sport", "ScienceTechnology", "Business", "Health"]
@@ -98,6 +101,29 @@ def check_redis():
     from pprint import pprint
     pprint(Counter(total_labels))
 
+def redis_write():
+    redis_cli = getRedisClient(db=15)
+
+    fw = open("/hdd/crawl_result/daypop.json", "w")
+    for key in redis_cli.scan_iter():
+        label = key.split(":")[0]
+        value = redis_cli.get(key)
+        d = json.loads(value)
+        text = BeautifulSoup(d['html'], 'html.parser').get_text()
+        # text = re.sub("\n+","\n",text)
+        text = '\n'.join([t.strip() for t in text.split("\n") if t.strip() != ''])
+        if text.strip() == "":
+            continue
+        print("*"*50 + d['article_id'] +'*'*50 + d['url'] +"*"*50)
+        print(text)
+
+        save_str = json.dumps(dict(id=d['article_id'], url=unquote(d['url']), title=d['title'], daypop_label=label, text=text), ensure_ascii=False)
+
+        fw.write(save_str + '\n')
+
 
 if __name__ == '__main__':
-    check_redis()
+    # res = get_article_detail('1f08a604634d7fafd926ae81dd42bf19', 'arabic')
+    redis_write()
+
+    a = 1

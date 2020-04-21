@@ -17,8 +17,10 @@ alriyadh_labels = [
 ]
 alriyadh_labels_arab = [t[0] for t in alriyadh_labels]
 
+def check_all_labls(line: str, line_key:str):
+    from util.redis_util import getRedisClient
+    cli = getRedisClient(db=14)
 
-def alriyadh_extractor(line: str) -> Optional[str]:
     json_obj = json.loads(line)
 
     url = json_obj.get('url')
@@ -42,15 +44,41 @@ def alriyadh_extractor(line: str) -> Optional[str]:
     try:
         label_node = dom.xpath("//h3/ol/li[@class='active']/a")[0]
 
-        arab_label_word = label_node.text
         eng_label_word = label_node.attrib['href']
 
-        if arab_label_word not in alriyadh_labels_arab:
+        cli.set(f"{eng_label_word}|{url}", 1)
+    except:
+        return None
+
+
+def alriyadh_extractor(line: str, *args) -> Optional[str]:
+    json_obj = json.loads(line)
+
+    url = json_obj.get('url')
+
+    url_parsed = urllib.parse.urlparse(url)
+
+    if url_parsed.netloc != "www.alriyadh.com":
+        return None
+    if url_parsed.query != '':
+        return None
+
+    path_words = [w for w in url_parsed.path.split("/") if w != '']
+
+    if len(path_words) != 1 or not re.match(r"^\d+$", path_words[0]):
+        return None
+
+    response = json_obj.get('response')
+
+    dom = html.fromstring(response)
+
+    try:
+        label_node = dom.xpath("//h3/ol/li[@class='active']/a")[0]
+
+        eng_label_word = label_node.attrib['href']
+
+        if eng_label_word not in ['/columns', '/misc', '/foll']:
             return None
-
-        arab_label = alriyadh_labels_arab.index(arab_label_word)
-
-        label_id = alriyadh_labels[arab_label][1]
 
         title = dom.xpath("//div[@class='article-title']/h2/text()")[0]
 
@@ -65,7 +93,7 @@ def alriyadh_extractor(line: str) -> Optional[str]:
         print(e)
         return None
 
-    return json.dumps(dict(url=url, title=title, label=arab_label_word, eng_label=eng_label_word, label_id=label_id,
+    return json.dumps(dict(url=url, title=title, label=eng_label_word[1:], label_id=-1,
                            paragraphs=paragraphs), ensure_ascii=False)
 
 
