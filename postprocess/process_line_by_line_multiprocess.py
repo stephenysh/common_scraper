@@ -5,12 +5,13 @@ from tqdm import tqdm
 from util.util import mapLineCount
 
 from postprocess.pool_wrapper import PoolWrapper
-from classification_data_eng.cnn.cnn_extractor import extract
+from classification_data_eng.guardian.guardian_extractor import extract
+from classification_data_eng.check_label_count import redis_deduplicate
 from util.log_util import getLogger
 from util.redis_util import getRedisClient
 
 if __name__ == '__main__':
-    pw = PoolWrapper(extract, poolsize=1)
+    pw = PoolWrapper(redis_deduplicate)
 
     logger = getLogger('process_line_by_line_multiprocess')
 

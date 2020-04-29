@@ -172,17 +172,16 @@ def write_url_to_redis(line: str, *args):
 if __name__ == '__main__':
     logger = getLogger("cnn")
 
-    paths = []
+    fw = open("/hdd/crawl_result/english_classification/crawl_edition.cnn.com_01.json_extract.json.json", "w")
 
-    with open("/hdd/crawl_result/edition.cnn.com_01.json", "rb") as fr:
+    with open("/hdd/crawl_result/english_classification/crawl_edition.cnn.com_01.json_extract.json", "rb") as fr:
         for lineno, line in enumerate(fr):
             line = line.decode("utf-8").strip()
-            try:
-                path = check_cnn_json_urls(line)
-            except Exception as e:
-                logger.error(f"Error [{lineno}]: {e}")
-            paths.append(path)
+            jobj = json.loads(line)
+            jobj['source'] = 'cnn'
+            t = jobj['content'][0]
+            jobj['content'][0] = re.sub("\(CNN ?\w*\)", lambda m: m.group(0)+' ',t)
 
-    from collections import Counter
-    from pprint import pprint
-    pprint(Counter(paths))
+            fw.write(json.dumps(jobj) + '\n')
+
+

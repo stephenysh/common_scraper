@@ -6,6 +6,7 @@ import requests
 
 from util.log_util import getLogger
 from util.redis_util import getRedisClient
+from typing import Optional
 
 logger = getLogger("huffpost_apis")
 
@@ -137,64 +138,56 @@ def check_redis_huffpost():
     pprint(Counter(total_labels))
 
 
-def extract_from_redis():
+def extract(line:str, line_key: str, *args) -> Optional[str]:
     from bs4 import BeautifulSoup
-    from tqdm import tqdm
 
-    redis_cli = getRedisClient(db=9)
+    jobj = json.loads(line)
 
-    dbsize = redis_cli.dbsize()
+    url = jobj['url']
 
-    fw = open("/hdd/crawl_result/english_classification/huffpost.json", 'w')
-    for key in tqdm(redis_cli.scan_iter(), total=dbsize):
-        value = redis_cli.get(key)
+    key = jobj['redis_key']
 
-        jobj = json.loads(value)
+    label = key.split(":")[0]
+    if label not in category_labels:
+        logger.error(f"unknown label: {url}")
+        return None
 
-        url = jobj['url']
+    mytags = category_labels[label][0]
+    label_id = category_labels[label][1]
 
-        label = key.split(":")[0]
-        if label not in category_labels:
-            logger.error(f"unknown label: {url}")
-            continue
+    tags = mytags + [tag for tag in jobj['tags'] if tag not in mytags]
 
-        mytags = category_labels[label][0]
-        label_id = category_labels[label][1]
+    try:
+        soup = BeautifulSoup(jobj['response'], 'html.parser')
+        if len(soup.select("h1.headline")) == 1:
 
-        tags = mytags + jobj['tags']
+            title = soup.select("h1.headline")[0].get_text()
+            # text_nodes = soup.select("section#entry-body  section[class='entry__content-list js-entry-content'] div[class='primary-cli cli cli-text']")
+            text_nodes = soup.select("section#entry-body  section[class='entry__content-list js-entry-content'] p")
+        elif len(soup.select("h1.headline__title")) == 1:
+            title = soup.select("h1.headline__title")[0].get_text()
+            # text_nodes = soup.select("div[class='entry__text js-entry-text yr-entry-text'] div[class='content-list-component yr-content-list-text text']")
+            text_nodes = soup.select("div[class='entry__text js-entry-text yr-entry-text'] p")
 
-        try:
-            soup = BeautifulSoup(jobj['response'], 'html.parser')
-            if len(soup.select("h1.headline")) == 1:
+        else:
+            logger.error(f"invalid pattern: {url}")
+            return None
 
-                title = soup.select("h1.headline")[0].get_text()
-                # text_nodes = soup.select("section#entry-body  section[class='entry__content-list js-entry-content'] div[class='primary-cli cli cli-text']")
-                text_nodes = soup.select("section#entry-body  section[class='entry__content-list js-entry-content'] p")
-            elif len(soup.select("h1.headline__title")) == 1:
-                title = soup.select("h1.headline__title")[0].get_text()
-                # text_nodes = soup.select("div[class='entry__text js-entry-text yr-entry-text'] div[class='content-list-component yr-content-list-text text']")
-                text_nodes = soup.select("div[class='entry__text js-entry-text yr-entry-text'] p")
+        content = [node.get_text(strip=True) for node in text_nodes]
+        content = [para for para in content if para != '' and para != 'More from HuffPost:']
 
-            else:
-                logger.error(f"invalid pattern: {url}")
-                continue
+        if len(content) == 0:
+            logger.error(f"empty content: {url}")
+            return None
+    except Exception as e:
+        logger.error(f"{e}: {url}")
+        return None
 
-            content = [node.get_text(strip=True) for node in text_nodes]
-            content = [para for para in content if para != '' and para != 'More from HuffPost:']
-
-            if len(content) == 0:
-                logger.error(f"empty content: {url}")
-                continue
-        except Exception as e:
-            logger.error(f"{e}: {url}")
-            continue
-
-        fw.write(
-            json.dumps(dict(url=url, tags=tags, label_id=label_id, title=title, content=content, source='huffpost'),
-                       ensure_ascii=False) + "\n")
+    return json.dumps(dict(url=url, tags=tags, label_id=label_id, title=title, content=content, source='huffpost'),
+                   ensure_ascii=False)
 
 
 
 
 if __name__ == '__main__':
-    extract_from_redis()
+    pass
