@@ -1,2 +1,2 @@
-scrapy==1.5
+scrapy==2.6.2
 redis
